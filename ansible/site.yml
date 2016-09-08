@@ -1,0 +1,49 @@
+---
+- name: prereqs
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: install packages
+      yum:
+        pkg: "{{ item }}"
+      with_items:
+        - epel-release
+        - wget 
+        - git 
+        - net-tools 
+        - bind-utils 
+        - iptables-services 
+        - bridge-utils 
+        - bash-completion
+
+    - name: install ansible
+      yum:
+        pkg: "{{ item }}"
+      with_items:
+        - ansible
+        - pyOpenSSL
+
+    - name: disable epel
+      command: yum-config-manager --disable epel
+
+    - name: install docker
+      yum:
+        pkg: docker
+
+    - name: Create docker-storage-setup file
+      copy:
+        content: |
+          DEVS=/dev/vdb
+          VG=docker-vg
+        dest: /etc/sysconfig/docker-storage-setup
+
+    - name: run docker-storage-setup 
+      command: docker-storage-setup 
+
+
+    - name: start docker
+      service:
+        name: docker
+        state: started
+        enabled: true
+
